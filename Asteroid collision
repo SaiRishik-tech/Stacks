@@ -1,1 +1,54 @@
+class Solution {
+public:
+    vector<int> asteroidCollision(vector<int>& asteroids) {
+        stack<int> st;
+        for (int a : asteroids) {
+            bool destroyed = false;
+            while (!st.empty() && a < 0 && st.top() > 0) {
+                if (abs(a) > st.top()) {
+                    st.pop();
+                } else if (abs(a) == st.top()) {
+                    st.pop();
+                    destroyed = true;
+                    break;
+                } else {
+                    destroyed = true;
+                    break;
+                }
+            }
+            if (!destroyed) {
+                st.push(a);
+            }
+        }
+        
+        vector<int> res(st.size());
+        for (int i = res.size() - 1; i >= 0; i--) {
+            res[i] = st.top();
+            st.pop();
+        }
+        return res;
+    }
+};
+Why bool changed is needed:
+In this brute-force simulation, collisions are handled pair by pair, and after each pass, the code checks:
+"Did any collision happen?"
+If yes, repeat the process on the new list.
+If no, stop — simulation is complete.
 
+What’s the main limitation of brute-force?
+Q: Why is brute-force slow?
+A: It re-checks the whole array after every collision (like bubble sort), leading to O(n²) time.
+
+What’s the ideal data structure?
+Q: Can we keep track of surviving asteroids efficiently?
+A: Yes, use a stack to keep track of right-moving asteroids and resolve collisions only when needed.
+
+
+When do we push and when do we pop from the stack?
+1)If current asteroid is moving right → always push to stack.
+2)If current is moving left, check for collisions with stack top:
+3)While top is moving right and collision is possible:
+4)Pop the smaller one
+If equal → both explode
+If current survives → continue comparing
+If no collision → push current
