@@ -1,0 +1,111 @@
+not even bruteforce:
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n=nums.size();
+        int mini=nums[0],maxi=nums[0];
+        long long range=0;
+
+        for(int i=0;i<n;i++)
+        {
+            for( int j=i;j<n;j++)
+            {
+                for(int k=i;k<j;k++)
+                {
+                    mini=min(mini,nums[k]);
+                    maxi=max(maxi,nums[k]);
+                }
+                range+=maxi-mini;
+            }
+        }
+        return range;
+    }
+};
+
+case1 passed
+case2 adn case3 failed
+so on dry run we get to knwo where we weent wrong
+some level above 
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n=nums.size();
+        int mini=nums[0],maxi=nums[0];
+        long long range=0;
+
+        for(int i=0;i<n;i++)
+        {
+            int mini=nums[i],maxi=nums[i];
+            for( int j=i;j<n;j++)
+            {
+                    mini=min(mini,nums[j]);
+                    maxi=max(maxi,nums[j]);
+                    range+=maxi-mini;
+                }          
+        }
+        return range;
+    }
+};
+I got error in the above for previously giving rane+=maxi-min; outside the loop
+It only adds the range of the last subarray, i.e., nums[i..n-1].
+
+So for i = 0, it only adds the range of [nums[0] to nums[n-1]], and skips:
+
+[i]
+
+[i, i+1]
+
+[i, i+2]
+
+...
+
+[i, n-2]
+For nums = [1, 2, 3],
+You want to compute and add:
+
+range of [1] ✅
+
+range of [1, 2] ✅
+
+range of [1, 2, 3] ✅
+
+But your code was only adding:
+
+range of [1, 2, 3] ❌ (just once)
+
+optimized approach 
+class Solution {
+public:
+    long long subArrayRanges(vector<int>& nums) {
+        int n = nums.size();
+        long long total = 0;
+
+        // Contribution as max
+        stack<int> stMax;
+        for (int i = 0; i <= n; i++) {
+            while (!stMax.empty() && (i == n || nums[stMax.top()] < nums[i])) {
+                int mid = stMax.top(); stMax.pop();
+                int left = stMax.empty() ? -1 : stMax.top();
+                int right = i;
+                long long count = (mid - left) * (right - mid);
+                total += (long long)nums[mid] * count;
+            }
+            stMax.push(i);
+        }
+
+        // Contribution as min
+        stack<int> stMin;
+        for (int i = 0; i <= n; i++) {
+            while (!stMin.empty() && (i == n || nums[stMin.top()] > nums[i])) {
+                int mid = stMin.top(); stMin.pop();
+                int left = stMin.empty() ? -1 : stMin.top();
+                int right = i;
+                long long count = (mid - left) * (right - mid);
+                total -= (long long)nums[mid] * count;
+            }
+            stMin.push(i);
+        }
+
+        return total;
+    }
+};
