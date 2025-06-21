@@ -1,0 +1,132 @@
+bruteforce: (not working for some cases becasue we are removing k digits contigiously but it doesnt ask that way we can remove k digits anywhere)
+class Solution {
+public:
+    string removeKdigits(string num, int k) {
+        string mini = num;
+        int n = num.length();
+
+        for (int i = 0; i <= n - k; i++) {
+            string temp = num;
+            temp.erase(i, k);  // erase k digits starting at i
+            temp.erase(0, temp.find_first_not_of('0')); // remove leading zeros
+            if (temp == "") temp = "0";
+            mini = min(mini, temp);
+        }
+
+        return mini;
+    }
+};
+
+             errors i faced:
+             declaring temp inside the loop is good
+             Now you're modifying the same temp, so future iterations work on a damaged string — that causes wrong results.
+              declaring mini outside teh loop is good becausee evertime it need to be changed
+
+temp = num.erase(i, k); this is not correct 
+string temp = num;
+temp.erase(i, k); this is correct
+
+failed test case 
+num=10200,k=1
+❌ Problem with your current loop:
+The loop only tries removing k consecutive digits starting at position i.
+But in "10200", k=1, the best result is by removing '1', not a block of 1 digit from each position.
+
+now modified code:
+To get the smallest number possible after removing k digits, we need to greedily remove bigger digits before smaller ones using a stack-based approach.
+
+optimized using stack:
+class Solution {
+public:
+    string removeKdigits(string s, int k) {
+
+        stack<int>st;
+        
+
+        for(int i=0;i<n-1;i++)
+        {
+            while(!st.empty()&&k>0 && st.top()-'0'>s[i]-'0')
+            {
+                st.pop();
+                k--;
+            }
+            st.push(s[i]);
+
+
+            while(k>0 )
+            {
+                st.pop();
+                k--;
+
+            }
+
+            if(st.empty())
+            {
+                return="0";
+            }
+            vector<int>res;
+
+            while(!st.empty())
+            {
+                res=res + st.top();
+                st.pop();
+            }
+//from this part still practice
+            while(!res.size()=="0" && res_back()=='0')
+            {
+                res.pop_back()
+
+            }
+
+            reverse(res);
+
+            if(res.empty())
+            {
+                return "0";
+            }
+
+          return res;
+
+        }
+        
+};
+
+corrected code
+class Solution {
+public:
+    string removeKdigits(string s, int k) {
+        int n = s.size();                     // missing variable 'n'
+        stack<char> st;                       // changed from int to char (since s[i] is a char)
+
+        for (int i = 0; i < n; i++) {         // fixed loop range
+            while (!st.empty() && k > 0 && st.top() > s[i]) {
+                st.pop();
+                k--;
+            }
+            st.push(s[i]);
+        }
+
+        // remove remaining digits if any
+        while (k > 0 && !st.empty()) {
+            st.pop();
+            k--;
+        }
+
+        // convert stack to string (in reverse)
+        string res;
+        while (!st.empty()) {
+            res += st.top();
+            st.pop();
+        }
+
+        reverse(res.begin(), res.end());      // reverse to get correct order
+
+        // remove leading zeros
+        int i = 0;
+        while (i < res.size() && res[i] == '0') i++;
+        res = res.substr(i);
+
+        return res.empty() ? "0" : res;
+    }
+};
+
