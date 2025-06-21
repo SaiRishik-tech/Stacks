@@ -1,0 +1,161 @@
+a greedy, center-expanding approach s
+my bruteforce
+ount =0;
+a loop intially to check which is greatest in the given array 
+store it in tempheight 
+maxi=INT_MAX
+set count +=1
+now calculate area =height*count;
+maxarea=max(area,maxi);
+
+but now i need to check which is greater next i-1 or i+1
+choose that and then set height tot which is smaller 
+increment count 
+calculate area again 
+like thsi do for all
+return maxarea;
+
+
+corrected code based on above idea 
+int largestRectangleArea(vector<int>& heights) {
+    int n = heights.size();
+    if (n == 0) return 0;
+
+    int maxHeight = 0, maxIndex = 0;
+    
+    // Step 1: Find the tallest bar
+    for (int i = 0; i < n; i++) {
+        if (heights[i] > maxHeight) {
+            maxHeight = heights[i];
+            maxIndex = i;
+        }
+    }
+
+    // Step 2: Start expanding from tallest bar
+    int left = maxIndex;
+    int right = maxIndex;
+    int minHeight = heights[maxIndex];
+    int maxArea = minHeight * 1;  // Only the bar itself
+    int width = 1;
+
+    // Step 3: Expand until full array is covered
+    while (left > 0 || right < n - 1) {
+        // Choose the side with taller bar next
+        if (left == 0) right++;
+        else if (right == n - 1) left--;
+        else if (heights[left - 1] > heights[right + 1]) left--;
+        else right++;
+
+        // Update min height in this range
+        minHeight = min(minHeight, min(heights[left], heights[right]));
+        width++;
+        maxArea = max(maxArea, minHeight * width);
+    }
+
+    return maxArea;
+}
+
+ChatGPT said:
+Got it — you're asking how to reach the optimized O(n) stack solution by thinking through it step-by-step using the right problem-solving questions.
+
+Let me guide you with that mindset — the way an experienced coder or interviewer would debug and refine the idea.
+
+🧠 Correct Thinking Approach via Smart Questions:
+✅ 1. What's the core operation?
+❓ What do I need to find?
+
+You need the largest area of any rectangle that can be formed with contiguous bars.
+
+✅ 2. What defines a rectangle in the histogram?
+❓ How is the area of a rectangle in the histogram calculated?
+
+Area = height × width
+
+The height is the smallest height in the range.
+
+The width is the number of bars used.
+
+✅ 3. Why is brute force inefficient?
+❓ What happens if I try every start and end index and find the min height in that range?
+
+You get O(n²) time since min height takes O(n) per range in worst-case.
+
+✅ 4. Can we fix a height instead?
+❓ What if I fix one bar as the height and expand left/right to find how far it can stretch?
+
+Yes — for each bar i, we try to find:
+
+left boundary: how far left it can go without hitting a smaller bar.
+
+right boundary: how far right it can go without hitting a smaller bar.
+
+So:
+
+cpp
+Copy
+Edit
+area[i] = height[i] * (right[i] - left[i] - 1)
+✅ 5. Can I compute left and right bounds efficiently?
+❓ Can we preprocess the next smaller to left and next smaller to right for every bar?
+
+Yes! And here's where we use a monotonic stack.
+
+✅ 6. How does a monotonic stack help?
+❓ What does a stack help track in this case?
+
+It helps us:
+
+Maintain increasing bar heights.
+
+When a shorter bar comes, we know the current bar is the right boundary for those in the stack.
+
+This lets us compute the width for that popped bar.
+
+✅ 7. How do I use the stack to calculate area directly?
+❓ When do I pop from the stack and compute the area?
+
+When the current height is less than the top of the stack:
+
+Pop the top → that bar is bounded now.
+
+Compute width:
+
+If stack is empty → width = i (start to current)
+
+Else → width = i - st.top() - 1
+
+Area = popped height × width
+
+✅ 8. How to ensure all bars are processed?
+❓ What happens to the bars remaining in the stack?
+
+Add a dummy zero at the end (heights.push_back(0)) so all bars get flushed out.
+
+✅ Final Insight:
+"Use a stack to track increasing bar indices. When a smaller bar appears, it means the previous bars cannot extend beyond this, so pop them and calculate areas. This gives an O(n) solution."
+
+
+
+
+optimized solution
+class Solution {
+public:
+    int largestRectangleArea(vector<int>& heights) {
+    int n = heights.size();
+    stack<int> st;
+    int maxArea = 0;
+    heights.push_back(0);
+
+    for (int i = 0; i < heights.size(); i++) {
+        while (!st.empty() && heights[i] < heights[st.top()]) {
+            int height = heights[st.top()];
+            st.pop();
+            int width = st.empty() ? i : (i - st.top() - 1);
+            maxArea = max(maxArea, height * width);
+        }
+        st.push(i);
+    }
+
+    return maxArea;
+    }
+};
