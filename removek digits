@@ -130,3 +130,40 @@ public:
     }
 };
 
+
+final correct working code 
+class Solution {
+public:
+    string removeKdigits(string s, int k) {
+        int n = s.size();
+        stack<char> st;
+
+        for (int i = 0; i < n; i++) {
+            while (!st.empty() && k > 0 && st.top() > s[i]) {
+                st.pop();
+                k--;
+            }
+            st.push(s[i]);
+        }
+
+        while (k > 0 && !st.empty()) {
+            st.pop();
+            k--;
+        }
+
+        string res;
+        while (!st.empty()) {
+            res = res + st.top();
+            st.pop();
+        }
+
+        reverse(res.begin(), res.end());
+
+        while (!res.empty() && res[0] == '0') {
+            res.erase(res.begin());
+        }
+
+        return res.empty() ? "0" : res;
+    }
+};
+
